@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Player, PlayerStats, Activity, Achievement, Match } from '@/types/game';
-import { initialPlayerStats, achievements, potentialMatches } from '@/data/gameData';
+import { useState, useCallback } from 'react';
+import { Player, PlayerStats, Activity, Achievement, AIPartner, GameSettings, DateScenario } from '@/types/game';
+import { achievements, partnerPersonalities } from '@/data/gameData';
 import { toast } from 'sonner';
 
 const calculateStabilityIndex = (stats: PlayerStats): number => {
@@ -9,50 +9,53 @@ const calculateStabilityIndex = (stats: PlayerStats): number => {
   const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
   const standardDeviation = Math.sqrt(variance);
   
-  // Lower deviation = higher stability (max 100 when all stats are equal)
-  const maxDeviation = 50; // Theoretical max deviation
+  const maxDeviation = 50;
   const stability = Math.max(0, Math.min(100, 100 - (standardDeviation / maxDeviation) * 100));
-  
-  // Also factor in average stat level
   const avgStat = mean;
   const balancedStability = (stability * 0.6) + (avgStat * 0.4);
   
   return Math.round(balancedStability);
 };
 
-const calculateCompatibility = (playerStats: PlayerStats, match: Match): number => {
-  const prefs = match.preferences;
-  let totalWeight = 0;
-  let weightedScore = 0;
-  
-  Object.entries(prefs).forEach(([key, minValue]) => {
-    const statKey = key as keyof PlayerStats;
-    const playerValue = playerStats[statKey];
-    const weight = minValue || 0;
-    totalWeight += weight;
-    
-    // Score based on how well player meets or exceeds preference
-    const score = Math.min(100, (playerValue / (minValue || 1)) * 100);
-    weightedScore += score * (weight / 100);
-  });
-  
-  return Math.round(weightedScore / (totalWeight / 100) || 50);
+const getRelationshipStatus = (affection: number): AIPartner['relationshipStatus'] => {
+  if (affection >= 80) return 'committed';
+  if (affection >= 40) return 'dating';
+  if (affection >= 20) return 'acquaintance';
+  return 'stranger';
 };
 
 export const useGameState = () => {
-  const [player, setPlayer] = useState<Player>({
-    name: 'You',
-    avatar: '🧑',
-    stats: { ...initialPlayerStats },
-    stabilityIndex: calculateStabilityIndex(initialPlayerStats),
-    day: 1,
-    achievements: [],
-  });
-  
-  const [matches, setMatches] = useState<Match[]>([]);
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
+  const [player, setPlayer] = useState<Player | null>(null);
+  const [partner, setPartner] = useState<AIPartner | null>(null);
   const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
+  const [activeDate, setActiveDate] = useState<DateScenario | null>(null);
 
-  const checkAchievements = useCallback((stats: PlayerStats, stability: number, currentAchievements: Achievement[]) => {
+  const initializeGame = useCallback((settings: GameSettings) => {
+    const personality = partnerPersonalities.find(p => p.id === settings.partnerPersonality) || partnerPersonalities[0];
+    
+    setPlayer({
+      name: settings.playerName,
+      avatar: settings.playerAvatar,
+      stats: settings.statPoints,
+      stabilityIndex: calculateStabilityIndex(settings.statPoints),
+      day: 1,
+      achievements: [],
+    });
+    
+    setPartner({
+      name: settings.partnerName,
+      avatar: settings.partnerAvatar,
+      personality: personality.name,
+      preferences: personality.preferences,
+      affection: 10,
+      relationshipStatus: 'stranger',
+    });
+    
+    setIsSetupComplete(true);
+  }, []);
+
+  const checkAchievements = useCallback((stats: PlayerStats, stability: number, affection: number, currentAchievements: Achievement[]) => {
     const unlockedIds = currentAchievements.map(a => a.id);
     const newlyUnlocked: Achievement[] = [];
     
@@ -77,17 +80,11 @@ export const useGameState = () => {
         case 'buff':
           unlocked = stats.strength >= 80;
           break;
-        case 'model':
-          unlocked = stats.looks >= 80;
+        case 'first_date':
+          unlocked = affection >= 15;
           break;
-        case 'genius':
-          unlocked = stats.intelligence >= 80;
-          break;
-        case 'scholar':
-          unlocked = stats.education >= 80;
-          break;
-        case 'athlete':
-          unlocked = stats.health >= 80;
+        case 'relationship':
+          unlocked = affection >= 80;
           break;
         case 'all_rounder':
           unlocked = Object.values(stats).every(v => v >= 60);
@@ -103,7 +100,11 @@ export const useGameState = () => {
   }, []);
 
   const performActivity = useCallback((activity: Activity) => {
+    if (!player || !partner) return;
+    
     setPlayer(prev => {
+      if (!prev) return prev;
+      
       const newStats = { ...prev.stats };
       
       Object.entries(activity.statChanges).forEach(([key, value]) => {
@@ -112,7 +113,7 @@ export const useGameState = () => {
       });
       
       const newStability = calculateStabilityIndex(newStats);
-      const newAchievements = checkAchievements(newStats, newStability, prev.achievements);
+      const newAchievements = checkAchievements(newStats, newStability, partner.affection, prev.achievements);
       
       if (newAchievements.length > 0) {
         setNewAchievement(newAchievements[0]);
@@ -131,42 +132,102 @@ export const useGameState = () => {
         achievements: [...prev.achievements, ...newAchievements],
       };
     });
-  }, [checkAchievements]);
+  }, [player, partner, checkAchievements]);
 
-  const findMatches = useCallback(() => {
-    const compatibleMatches = potentialMatches.map(match => ({
-      ...match,
-      compatibilityScore: calculateCompatibility(player.stats, match),
-    })).sort((a, b) => (b.compatibilityScore || 0) - (a.compatibilityScore || 0));
+  const startDate = useCallback((scenario: DateScenario) => {
+    setActiveDate(scenario);
+  }, []);
+
+  const completeDate = useCallback((affectionGained: number, chosenStats: string[]) => {
+    if (!player || !partner) return;
     
-    setMatches(compatibleMatches);
-    
-    // Check for first match achievement
-    if (compatibleMatches.some(m => (m.compatibilityScore || 0) >= 70)) {
-      const hasFirstMatch = player.achievements.some(a => a.id === 'first_match');
-      if (!hasFirstMatch) {
-        const matchAchievement = achievements.find(a => a.id === 'first_match');
-        if (matchAchievement) {
-          const unlocked = { ...matchAchievement, unlockedAt: new Date() };
-          setPlayer(prev => ({
-            ...prev,
-            achievements: [...prev.achievements, unlocked],
-          }));
-          setNewAchievement(unlocked);
-          setTimeout(() => setNewAchievement(null), 3000);
-        }
+    // Apply stat bonuses based on partner preferences
+    const statBonus: Partial<PlayerStats> = {};
+    chosenStats.forEach(stat => {
+      const key = stat as keyof PlayerStats;
+      const preference = partner.preferences[key] || 0;
+      const bonus = Math.round(preference * 10);
+      statBonus[key] = (statBonus[key] || 0) + bonus;
+    });
+
+    setPlayer(prev => {
+      if (!prev) return prev;
+      
+      const newStats = { ...prev.stats };
+      Object.entries(statBonus).forEach(([key, value]) => {
+        const statKey = key as keyof PlayerStats;
+        newStats[statKey] = Math.max(0, Math.min(100, newStats[statKey] + (value || 0)));
+      });
+      
+      const newStability = calculateStabilityIndex(newStats);
+      
+      return {
+        ...prev,
+        stats: newStats,
+        stabilityIndex: newStability,
+        day: prev.day + 1,
+      };
+    });
+
+    setPartner(prev => {
+      if (!prev) return prev;
+      
+      const newAffection = Math.min(100, prev.affection + affectionGained);
+      const newStatus = getRelationshipStatus(newAffection);
+      
+      if (newStatus !== prev.relationshipStatus) {
+        toast.success('Relationship upgraded!', {
+          description: `You are now ${newStatus === 'committed' ? 'in a relationship' : newStatus}!`,
+        });
+      }
+      
+      return {
+        ...prev,
+        affection: newAffection,
+        relationshipStatus: newStatus,
+      };
+    });
+
+    // Check for date-related achievements
+    if (player) {
+      const newAchievements = checkAchievements(
+        player.stats, 
+        player.stabilityIndex, 
+        partner.affection + affectionGained, 
+        player.achievements
+      );
+      
+      if (newAchievements.length > 0) {
+        setNewAchievement(newAchievements[0]);
+        setTimeout(() => setNewAchievement(null), 3000);
+        
+        setPlayer(prev => prev ? {
+          ...prev,
+          achievements: [...prev.achievements, ...newAchievements],
+        } : prev);
       }
     }
-  }, [player.stats, player.achievements]);
 
-  useEffect(() => {
-    findMatches();
-  }, [player.stats]);
+    setActiveDate(null);
+    toast.success('Date complete!', {
+      description: `+${affectionGained} affection with ${partner.name}`,
+    });
+  }, [player, partner, checkAchievements]);
+
+  const cancelDate = useCallback(() => {
+    setActiveDate(null);
+  }, []);
 
   return {
+    isSetupComplete,
     player,
-    matches,
-    performActivity,
+    partner,
     newAchievement,
+    activeDate,
+    initializeGame,
+    performActivity,
+    startDate,
+    completeDate,
+    cancelDate,
   };
 };

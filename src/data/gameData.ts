@@ -1,4 +1,4 @@
-import { Activity, Match, Achievement } from '@/types/game';
+import { Activity, Achievement, DateScenario } from '@/types/game';
 
 export const activities: Activity[] = [
   {
@@ -55,81 +55,6 @@ export const activities: Activity[] = [
     stabilityChange: 6,
     duration: 1,
   },
-  {
-    id: 'social',
-    name: 'Networking Event',
-    description: 'Build connections and social skills',
-    icon: '🎭',
-    statChanges: { looks: 2, intelligence: 2, wealth: 3 },
-    stabilityChange: 4,
-    duration: 1,
-  },
-  {
-    id: 'course',
-    name: 'Online Course',
-    description: 'Get certified in a new skill',
-    icon: '🎓',
-    statChanges: { education: 10, intelligence: 4, wealth: -8 },
-    stabilityChange: 7,
-    duration: 1,
-  },
-];
-
-export const potentialMatches: Match[] = [
-  {
-    id: '1',
-    name: 'Emma',
-    age: 28,
-    avatar: '👩‍🦰',
-    bio: 'Ambitious entrepreneur who loves hiking and cooking. Looking for someone who shares my drive for success.',
-    interests: ['Hiking', 'Cooking', 'Business', 'Travel'],
-    preferences: { wealth: 60, intelligence: 70, health: 50 },
-  },
-  {
-    id: '2',
-    name: 'Alex',
-    age: 26,
-    avatar: '🧑‍💼',
-    bio: 'Fitness instructor by day, bookworm by night. Want someone who can keep up at the gym and the library!',
-    interests: ['Fitness', 'Reading', 'Nutrition', 'Yoga'],
-    preferences: { strength: 70, intelligence: 60, health: 80 },
-  },
-  {
-    id: '3',
-    name: 'Sofia',
-    age: 30,
-    avatar: '👩‍🔬',
-    bio: 'PhD in neuroscience. I appreciate deep conversations and intellectual curiosity over small talk.',
-    interests: ['Science', 'Philosophy', 'Art', 'Wine'],
-    preferences: { intelligence: 85, education: 75 },
-  },
-  {
-    id: '4',
-    name: 'Jordan',
-    age: 27,
-    avatar: '🧑‍🎨',
-    bio: 'Artist and fashion enthusiast. Life is too short for boring clothes and boring people!',
-    interests: ['Art', 'Fashion', 'Photography', 'Music'],
-    preferences: { looks: 75, wealth: 50 },
-  },
-  {
-    id: '5',
-    name: 'Maya',
-    age: 29,
-    avatar: '👩‍⚕️',
-    bio: 'Doctor who believes in work-life balance. Looking for stability and genuine connection.',
-    interests: ['Medicine', 'Running', 'Cooking', 'Movies'],
-    preferences: { health: 70, education: 60, wealth: 50 },
-  },
-  {
-    id: '6',
-    name: 'Chris',
-    age: 31,
-    avatar: '🧑‍💻',
-    bio: 'Tech founder living the startup life. Need someone who understands the hustle but keeps me grounded.',
-    interests: ['Tech', 'Gaming', 'Startups', 'Fitness'],
-    preferences: { intelligence: 65, wealth: 70, strength: 40 },
-  },
 ];
 
 export const achievements: Achievement[] = [
@@ -164,40 +89,147 @@ export const achievements: Achievement[] = [
     icon: '💪',
   },
   {
-    id: 'model',
-    title: 'Head Turner',
-    description: 'Reach 80+ Looks stat',
-    icon: '✨',
-  },
-  {
-    id: 'genius',
-    title: 'Big Brain',
-    description: 'Reach 80+ Intelligence stat',
-    icon: '🧠',
-  },
-  {
-    id: 'scholar',
-    title: 'Academic Excellence',
-    description: 'Reach 80+ Education stat',
-    icon: '📜',
-  },
-  {
-    id: 'athlete',
-    title: 'Peak Performance',
-    description: 'Reach 80+ Health stat',
-    icon: '❤️',
-  },
-  {
-    id: 'first_match',
-    title: 'Sparks Flying',
-    description: 'Get your first match',
+    id: 'first_date',
+    title: 'First Date',
+    description: 'Go on your first date',
     icon: '💕',
+  },
+  {
+    id: 'relationship',
+    title: 'Official',
+    description: 'Start a relationship',
+    icon: '💑',
   },
   {
     id: 'all_rounder',
     title: 'Renaissance Person',
     description: 'Have all stats above 60',
     icon: '🎯',
+  },
+];
+
+export const partnerPersonalities = [
+  {
+    id: 'ambitious',
+    name: 'Ambitious',
+    description: 'Values success and hard work',
+    preferences: { wealth: 0.3, intelligence: 0.3, education: 0.2, looks: 0.1, strength: 0.05, health: 0.05 },
+  },
+  {
+    id: 'athletic',
+    name: 'Athletic',
+    description: 'Loves fitness and outdoor activities',
+    preferences: { strength: 0.35, health: 0.35, looks: 0.15, wealth: 0.05, intelligence: 0.05, education: 0.05 },
+  },
+  {
+    id: 'intellectual',
+    name: 'Intellectual',
+    description: 'Appreciates deep conversations and learning',
+    preferences: { intelligence: 0.35, education: 0.35, health: 0.1, wealth: 0.1, looks: 0.05, strength: 0.05 },
+  },
+  {
+    id: 'balanced',
+    name: 'Balanced',
+    description: 'Values overall stability and well-roundedness',
+    preferences: { wealth: 0.17, strength: 0.17, looks: 0.17, intelligence: 0.17, education: 0.16, health: 0.16 },
+  },
+];
+
+export const dateScenarios: DateScenario[] = [
+  {
+    id: 'coffee',
+    name: 'Coffee Date',
+    icon: '☕',
+    description: 'A casual coffee meetup',
+    requiredAffection: 0,
+    dialogue: [
+      { speaker: 'partner', text: "So, tell me about yourself. What do you do for fun?" },
+      { 
+        speaker: 'player', 
+        options: [
+          { text: "I love staying active and hitting the gym!", stats: ['strength', 'health'], affectionBonus: 2 },
+          { text: "I'm really into reading and learning new things.", stats: ['intelligence', 'education'], affectionBonus: 2 },
+          { text: "Honestly, I'm focused on my career right now.", stats: ['wealth'], affectionBonus: 1 },
+        ]
+      },
+      { speaker: 'partner', text: "That's interesting! I appreciate someone who knows what they want." },
+    ],
+  },
+  {
+    id: 'dinner',
+    name: 'Fancy Dinner',
+    icon: '🍽️',
+    description: 'An upscale restaurant experience',
+    requiredAffection: 20,
+    dialogue: [
+      { speaker: 'partner', text: "This place is lovely. Do you come here often?" },
+      { 
+        speaker: 'player', 
+        options: [
+          { text: "I know the owner actually. Connections matter!", stats: ['wealth', 'intelligence'], affectionBonus: 3 },
+          { text: "First time! I wanted to impress you.", stats: ['looks'], affectionBonus: 4 },
+          { text: "I read great reviews. I did my research.", stats: ['intelligence', 'education'], affectionBonus: 2 },
+        ]
+      },
+      { speaker: 'partner', text: "Well, I'm definitely impressed so far..." },
+    ],
+  },
+  {
+    id: 'hiking',
+    name: 'Hiking Adventure',
+    icon: '🥾',
+    description: 'Explore nature together',
+    requiredAffection: 30,
+    dialogue: [
+      { speaker: 'partner', text: "Wow, this trail is beautiful! How are you holding up?" },
+      { 
+        speaker: 'player', 
+        options: [
+          { text: "I could do this all day! Want to race to the top?", stats: ['strength', 'health'], affectionBonus: 4 },
+          { text: "It's challenging but the view is worth it.", stats: ['health'], affectionBonus: 3 },
+          { text: "Let's take a break and enjoy the scenery.", stats: ['intelligence'], affectionBonus: 2 },
+        ]
+      },
+      { speaker: 'partner', text: "I love spending time in nature with you." },
+    ],
+  },
+  {
+    id: 'movie',
+    name: 'Movie Night',
+    icon: '🎬',
+    description: 'Watch a film together',
+    requiredAffection: 40,
+    dialogue: [
+      { speaker: 'partner', text: "What genre should we watch tonight?" },
+      { 
+        speaker: 'player', 
+        options: [
+          { text: "How about a documentary? I love learning.", stats: ['intelligence', 'education'], affectionBonus: 3 },
+          { text: "Action movie! Something exciting.", stats: ['strength'], affectionBonus: 2 },
+          { text: "A romantic comedy - seems fitting.", stats: ['looks'], affectionBonus: 4 },
+        ]
+      },
+      { speaker: 'partner', text: "Perfect choice. I'll make the popcorn!" },
+    ],
+  },
+  {
+    id: 'commitment',
+    name: 'The Big Question',
+    icon: '💍',
+    description: 'Take things to the next level',
+    requiredAffection: 80,
+    dialogue: [
+      { speaker: 'partner', text: "We've been through so much together. I feel like this is really special." },
+      { 
+        speaker: 'player', 
+        options: [
+          { text: "I feel the same. Will you be my partner officially?", stats: [], affectionBonus: 20 },
+          { text: "Let's keep things as they are for now.", stats: [], affectionBonus: -10 },
+          { text: "I've been thinking about our future too...", stats: ['intelligence'], affectionBonus: 15 },
+        ]
+      },
+      { speaker: 'partner', text: "This means everything to me..." },
+    ],
   },
 ];
 
@@ -209,3 +241,5 @@ export const initialPlayerStats = {
   education: 35,
   health: 50,
 };
+
+export const avatarOptions = ['🧑', '👨', '👩', '🧔', '👱‍♀️', '👱', '🧑‍🦱', '👩‍🦰', '👨‍🦳', '👩‍🦳'];

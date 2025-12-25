@@ -16,15 +16,13 @@ export interface Player {
   achievements: Achievement[];
 }
 
-export interface Match {
-  id: string;
+export interface AIPartner {
   name: string;
-  age: number;
   avatar: string;
-  bio: string;
-  interests: string[];
-  preferences: Partial<PlayerStats>;
-  compatibilityScore?: number;
+  personality: string;
+  preferences: Record<keyof PlayerStats, number>;
+  affection: number;
+  relationshipStatus: 'stranger' | 'acquaintance' | 'dating' | 'committed';
 }
 
 export interface Achievement {
@@ -43,6 +41,36 @@ export interface Activity {
   statChanges: Partial<PlayerStats>;
   stabilityChange: number;
   duration: number;
+}
+
+export interface DialogueOption {
+  text: string;
+  stats: string[];
+  affectionBonus: number;
+}
+
+export interface DialogueLine {
+  speaker: 'player' | 'partner';
+  text?: string;
+  options?: DialogueOption[];
+}
+
+export interface DateScenario {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  requiredAffection: number;
+  dialogue: DialogueLine[];
+}
+
+export interface GameSettings {
+  playerName: string;
+  playerAvatar: string;
+  partnerName: string;
+  partnerAvatar: string;
+  partnerPersonality: string;
+  statPoints: PlayerStats;
 }
 
 export type StatKey = keyof PlayerStats;

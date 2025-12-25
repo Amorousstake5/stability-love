@@ -4,14 +4,35 @@ import { activities } from '@/data/gameData';
 import { GameHeader } from '@/components/game/GameHeader';
 import { PlayerProfile } from '@/components/game/PlayerProfile';
 import { ActivityCard } from '@/components/game/ActivityCard';
-import { MatchCard } from '@/components/game/MatchCard';
+import { PartnerCard } from '@/components/game/PartnerCard';
+import { DateOptions } from '@/components/game/DateOptions';
+import { DateSimulation } from '@/components/game/DateSimulation';
+import { SetupModal } from '@/components/game/SetupModal';
 import { AchievementPopup } from '@/components/game/AchievementPopup';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Users, Dumbbell } from 'lucide-react';
+import { Sparkles, Heart, Dumbbell } from 'lucide-react';
 
 const Index = () => {
-  const { player, matches, performActivity, newAchievement } = useGameState();
+  const { 
+    isSetupComplete, 
+    player, 
+    partner, 
+    newAchievement, 
+    activeDate,
+    initializeGame, 
+    performActivity,
+    startDate,
+    completeDate,
+    cancelDate,
+  } = useGameState();
+  
   const [activeTab, setActiveTab] = useState('activities');
+
+  if (!isSetupComplete) {
+    return <SetupModal onComplete={initializeGame} />;
+  }
+
+  if (!player || !partner) return null;
 
   return (
     <div className="min-h-screen gradient-romantic">
@@ -20,8 +41,9 @@ const Index = () => {
       <main className="container mx-auto px-4 py-6">
         <div className="grid gap-6 lg:grid-cols-12">
           {/* Player Profile Sidebar */}
-          <aside className="lg:col-span-4">
+          <aside className="lg:col-span-4 space-y-6">
             <PlayerProfile player={player} />
+            <PartnerCard partner={partner} />
           </aside>
           
           {/* Main Content */}
@@ -32,24 +54,19 @@ const Index = () => {
                   <Dumbbell className="h-4 w-4" />
                   Daily Activities
                 </TabsTrigger>
-                <TabsTrigger value="matches" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Matches
-                  {matches.filter(m => (m.compatibilityScore || 0) >= 70).length > 0 && (
-                    <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      {matches.filter(m => (m.compatibilityScore || 0) >= 70).length}
-                    </span>
-                  )}
+                <TabsTrigger value="dates" className="flex items-center gap-2">
+                  <Heart className="h-4 w-4" />
+                  Go on a Date
                 </TabsTrigger>
               </TabsList>
               
               <TabsContent value="activities" className="animate-fade-in">
                 <div className="mb-4 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-accent" />
-                  <h2 className="font-display text-xl font-semibold">Choose Your Daily Activity</h2>
+                  <h2 className="font-display text-xl font-semibold">Improve Yourself</h2>
                 </div>
                 <p className="mb-6 text-muted-foreground">
-                  Each activity takes one day. Balance your choices to maximize your Stability Index!
+                  Each activity takes one day and affects your stats. Build yourself up to impress {partner.name}!
                 </p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {activities.map((activity) => (
@@ -62,24 +79,30 @@ const Index = () => {
                 </div>
               </TabsContent>
               
-              <TabsContent value="matches" className="animate-fade-in">
+              <TabsContent value="dates" className="animate-fade-in">
                 <div className="mb-4 flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  <h2 className="font-display text-xl font-semibold">Potential Matches</h2>
+                  <Heart className="h-5 w-5 text-stat-looks" />
+                  <h2 className="font-display text-xl font-semibold">Date {partner.name}</h2>
                 </div>
                 <p className="mb-6 text-muted-foreground">
-                  Compatibility is based on how well your stats match their preferences. Keep improving!
+                  Unlock new date options by building affection. Your choices matter!
                 </p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {matches.map((match) => (
-                    <MatchCard key={match.id} match={match} />
-                  ))}
-                </div>
+                <DateOptions partner={partner} onSelectDate={startDate} />
               </TabsContent>
             </Tabs>
           </div>
         </div>
       </main>
+      
+      {activeDate && (
+        <DateSimulation
+          scenario={activeDate}
+          partner={partner}
+          player={player}
+          onComplete={completeDate}
+          onClose={cancelDate}
+        />
+      )}
       
       {newAchievement && <AchievementPopup achievement={newAchievement} />}
     </div>

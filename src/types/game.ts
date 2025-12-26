@@ -73,4 +73,34 @@ export interface GameSettings {
   statPoints: PlayerStats;
 }
 
+export interface PotentialPartner {
+  id: string;
+  name: string;
+  avatar: string;
+  age: number;
+  bio: string;
+  personality: string;
+  personalityId: string;
+  traits: string[];
+  compatibilityHint: string;
+  preferences: Record<keyof PlayerStats, number>;
+}
+
+export interface RandomEventChoice {
+  text: string;
+  risk: 'low' | 'medium' | 'high';
+  effects: Partial<PlayerStats>;
+  affectionChange: number;
+  stabilityMultiplier: number;
+}
+
+export interface RandomEvent {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  type: 'positive' | 'negative' | 'neutral';
+  choices: RandomEventChoice[];
+}
+
 export type StatKey = keyof PlayerStats;

@@ -7,7 +7,8 @@ import { ActivityCard } from '@/components/game/ActivityCard';
 import { PartnerCard } from '@/components/game/PartnerCard';
 import { DateOptions } from '@/components/game/DateOptions';
 import { DateSimulation } from '@/components/game/DateSimulation';
-import { SetupModal } from '@/components/game/SetupModal';
+import { TinderSelection } from '@/components/game/TinderSelection';
+import { RandomEventModal } from '@/components/game/RandomEventModal';
 import { AchievementPopup } from '@/components/game/AchievementPopup';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, Heart, Dumbbell } from 'lucide-react';
@@ -19,17 +20,19 @@ const Index = () => {
     partner, 
     newAchievement, 
     activeDate,
-    initializeGame, 
+    activeEvent,
+    initializeFromSwipe, 
     performActivity,
     startDate,
     completeDate,
     cancelDate,
+    resolveEvent,
   } = useGameState();
   
   const [activeTab, setActiveTab] = useState('activities');
 
   if (!isSetupComplete) {
-    return <SetupModal onComplete={initializeGame} />;
+    return <TinderSelection onComplete={initializeFromSwipe} />;
   }
 
   if (!player || !partner) return null;
@@ -67,6 +70,7 @@ const Index = () => {
                 </div>
                 <p className="mb-6 text-muted-foreground">
                   Each activity takes one day and affects your stats. Build yourself up to impress {partner.name}!
+                  <span className="block mt-1 text-sm text-destructive">⚠️ Random events may occur. Stats decay over time!</span>
                 </p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {activities.map((activity) => (
@@ -101,6 +105,13 @@ const Index = () => {
           player={player}
           onComplete={completeDate}
           onClose={cancelDate}
+        />
+      )}
+      
+      {activeEvent && (
+        <RandomEventModal
+          event={activeEvent}
+          onResolve={resolveEvent}
         />
       )}
       

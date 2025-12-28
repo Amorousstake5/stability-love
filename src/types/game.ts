@@ -20,9 +20,22 @@ export interface AIPartner {
   name: string;
   avatar: string;
   personality: string;
+  personalityId: string;
   preferences: Record<keyof PlayerStats, number>;
   affection: number;
   relationshipStatus: 'stranger' | 'acquaintance' | 'dating' | 'committed';
+}
+
+export interface RelationshipMilestone {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  requiredAffection: number;
+  rewards: {
+    statBonus?: Partial<PlayerStats>;
+    stabilityBonus?: number;
+  };
 }
 
 export interface Achievement {

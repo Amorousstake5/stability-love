@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Player, PlayerStats, Activity, Achievement, AIPartner, DateScenario, PotentialPartner, RandomEvent, RandomEventChoice } from '@/types/game';
-import { achievements, randomEvents } from '@/data/gameData';
+import { useState, useCallback } from 'react';
+import { Player, PlayerStats, Activity, Achievement, AIPartner, DateScenario, PotentialPartner, RandomEvent, RelationshipMilestone } from '@/types/game';
+import { achievements, randomEvents, relationshipMilestones } from '@/data/gameData';
 import { toast } from 'sonner';
 
 const calculateStabilityIndex = (stats: PlayerStats): number => {
@@ -32,6 +32,8 @@ export const useGameState = () => {
   const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
   const [activeDate, setActiveDate] = useState<DateScenario | null>(null);
   const [activeEvent, setActiveEvent] = useState<RandomEvent | null>(null);
+  const [activeMilestone, setActiveMilestone] = useState<RelationshipMilestone | null>(null);
+  const [unlockedMilestones, setUnlockedMilestones] = useState<string[]>([]);
   const [eventsOvercome, setEventsOvercome] = useState(0);
 
   const initializeFromSwipe = useCallback((settings: {
@@ -53,6 +55,7 @@ export const useGameState = () => {
       name: settings.selectedPartner.name,
       avatar: settings.selectedPartner.avatar,
       personality: settings.selectedPartner.personality,
+      personalityId: settings.selectedPartner.personalityId,
       preferences: settings.selectedPartner.preferences,
       affection: 15, // Start with some affection since you matched
       relationshipStatus: 'acquaintance',
@@ -304,6 +307,31 @@ export const useGameState = () => {
     setTimeout(() => triggerRandomEvent(), 500);
   }, [player, partner, checkAchievements, eventsOvercome, triggerRandomEvent]);
 
+  const checkMilestones = useCallback((affection: number) => {
+    const milestone = relationshipMilestones.find(
+      m => affection >= m.requiredAffection && !unlockedMilestones.includes(m.id)
+    );
+    if (milestone) {
+      setUnlockedMilestones(prev => [...prev, milestone.id]);
+      setActiveMilestone(milestone);
+      setTimeout(() => setActiveMilestone(null), 4000);
+      
+      // Apply rewards
+      if (milestone.rewards.statBonus) {
+        setPlayer(prev => {
+          if (!prev) return prev;
+          const newStats = { ...prev.stats };
+          Object.entries(milestone.rewards.statBonus!).forEach(([key, value]) => {
+            const statKey = key as keyof PlayerStats;
+            newStats[statKey] = Math.min(100, newStats[statKey] + (value || 0));
+          });
+          return { ...prev, stats: newStats };
+        });
+      }
+      toast.success(`Milestone: ${milestone.title}!`);
+    }
+  }, [unlockedMilestones]);
+
   const cancelDate = useCallback(() => {
     setActiveDate(null);
   }, []);
@@ -315,10 +343,14 @@ export const useGameState = () => {
     newAchievement,
     activeDate,
     activeEvent,
+    activeMilestone,
     initializeFromSwipe,
     performActivity,
     startDate,
-    completeDate,
+    completeDate: useCallback((affectionGained: number, chosenStats: string[]) => {
+      completeDate(affectionGained, chosenStats);
+      if (partner) checkMilestones(partner.affection + affectionGained);
+    }, [completeDate, partner, checkMilestones]),
     cancelDate,
     resolveEvent,
   };

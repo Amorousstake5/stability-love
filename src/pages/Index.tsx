@@ -10,6 +10,7 @@ import { DateSimulation } from '@/components/game/DateSimulation';
 import { TinderSelection } from '@/components/game/TinderSelection';
 import { RandomEventModal } from '@/components/game/RandomEventModal';
 import { AchievementPopup } from '@/components/game/AchievementPopup';
+import { MilestonePopup } from '@/components/game/MilestonePopup';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, Heart, Dumbbell } from 'lucide-react';
 
@@ -21,6 +22,7 @@ const Index = () => {
     newAchievement, 
     activeDate,
     activeEvent,
+    activeMilestone,
     initializeFromSwipe, 
     performActivity,
     startDate,
@@ -116,6 +118,7 @@ const Index = () => {
       )}
       
       {newAchievement && <AchievementPopup achievement={newAchievement} />}
+      {activeMilestone && <MilestonePopup milestone={activeMilestone} onClose={() => {}} />}
     </div>
   );
 };

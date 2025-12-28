@@ -1,4 +1,5 @@
 import { DialogueLine, DialogueOption, AIPartner } from '@/types/game';
+import { personalityDialogues } from '@/data/gameData';
 import { cn } from '@/lib/utils';
 
 interface DialogueBoxProps {
@@ -8,7 +9,23 @@ interface DialogueBoxProps {
   isAnimating: boolean;
 }
 
+const getPersonalizedResponse = (partner: AIPartner, context: 'greeting' | 'impressed' | 'disappointed' | 'loving'): string => {
+  const personality = partner.personalityId || 'balanced';
+  const dialogues = personalityDialogues[personality] || personalityDialogues.balanced;
+  const options = dialogues[context];
+  return options[Math.floor(Math.random() * options.length)];
+};
+
 export const DialogueBox = ({ partner, currentLine, onSelectOption, isAnimating }: DialogueBoxProps) => {
+  // Get personalized text based on partner's personality
+  const getDialogueText = (): string => {
+    if (currentLine.text) {
+      return currentLine.text;
+    }
+    // If no text provided, generate based on personality
+    return getPersonalizedResponse(partner, 'greeting');
+  };
+
   if (currentLine.speaker === 'partner') {
     return (
       <div className="rounded-2xl bg-card p-6 shadow-card animate-fade-in">
@@ -17,12 +34,15 @@ export const DialogueBox = ({ partner, currentLine, onSelectOption, isAnimating 
             {partner.avatar}
           </div>
           <div>
-            <p className="font-semibold text-primary">{partner.name}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-primary">{partner.name}</p>
+              <span className="text-xs text-muted-foreground italic">({partner.personality})</span>
+            </div>
             <p className={cn(
               'mt-1 text-lg leading-relaxed',
               isAnimating && 'animate-pulse-soft'
             )}>
-              {currentLine.text}
+              {getDialogueText()}
             </p>
           </div>
         </div>

@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, ChevronRight, Sparkles } from 'lucide-react';
-import { PlayerStats, StatKey } from '@/types/game';
+import { PlayerStats, StatKey, PotentialPartner } from '@/types/game';
 import { avatarOptions, initialPlayerStats, potentialPartners } from '@/data/gameData';
 import { cn } from '@/lib/utils';
-
 interface TinderSelectionProps {
   onComplete: (settings: {
     playerName: string;
@@ -46,6 +45,7 @@ export const TinderSelection = ({ onComplete }: TinderSelectionProps) => {
 
   const handleSwipe = (direction: 'left' | 'right') => {
     const partner = potentialPartners[currentIndex];
+    const isLastCard = currentIndex >= potentialPartners.length - 1;
     
     if (direction === 'right') {
       // 60% chance they like you back (makes it harder)
@@ -56,13 +56,15 @@ export const TinderSelection = ({ onComplete }: TinderSelectionProps) => {
       }
     }
     
-    if (currentIndex < potentialPartners.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else if (matches.length === 0 && direction === 'left') {
-      // Force at least one match on last card
-      setMatches([partner]);
-      setShowMatch(partner);
+    // Force at least one match on last card if none yet
+    if (isLastCard && matches.length === 0) {
+      setMatches(prev => prev.length === 0 ? [partner] : prev);
+      if (matches.length === 0) {
+        setShowMatch(partner);
+      }
     }
+    
+    setCurrentIndex(prev => prev + 1);
   };
 
   const selectMatch = (partner: typeof potentialPartners[0]) => {
@@ -306,85 +308,90 @@ export const TinderSelection = ({ onComplete }: TinderSelectionProps) => {
   );
 };
 
-// Swipeable Card Component
+// Swipeable Card Component with forwardRef for AnimatePresence
 interface SwipeableCardProps {
-  partner: typeof potentialPartners[0];
+  partner: PotentialPartner;
   isTop: boolean;
   onSwipe: (direction: 'left' | 'right') => void;
   stackIndex: number;
 }
 
-const SwipeableCard = ({ partner, isTop, onSwipe, stackIndex }: SwipeableCardProps) => {
-  const [dragX, setDragX] = useState(0);
+const SwipeableCard = forwardRef<HTMLDivElement, SwipeableCardProps>(
+  ({ partner, isTop, onSwipe, stackIndex }, ref) => {
+    const [dragX, setDragX] = useState(0);
 
-  return (
-    <motion.div
-      className={cn(
-        "absolute inset-0 rounded-2xl bg-card shadow-card overflow-hidden",
-        isTop ? "cursor-grab active:cursor-grabbing" : "pointer-events-none"
-      )}
-      style={{
-        scale: 1 - stackIndex * 0.05,
-        y: stackIndex * 8,
-        zIndex: 10 - stackIndex,
-      }}
-      drag={isTop ? "x" : false}
-      dragConstraints={{ left: 0, right: 0 }}
-      onDrag={(_, info) => setDragX(info.offset.x)}
-      onDragEnd={(_, info) => {
-        if (info.offset.x > 100) onSwipe('right');
-        else if (info.offset.x < -100) onSwipe('left');
-        setDragX(0);
-      }}
-      animate={{ x: 0, rotate: isTop ? dragX * 0.1 : 0 }}
-      exit={{ x: dragX > 0 ? 300 : -300, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-    >
-      {/* Like/Nope Indicators */}
-      {isTop && (
-        <>
-          <div 
-            className="absolute left-4 top-4 z-10 rounded-lg border-4 border-green-500 px-4 py-2 font-bold text-green-500 rotate-[-15deg] transition-opacity"
-            style={{ opacity: Math.max(0, dragX / 100) }}
-          >
-            LIKE
-          </div>
-          <div 
-            className="absolute right-4 top-4 z-10 rounded-lg border-4 border-red-500 px-4 py-2 font-bold text-red-500 rotate-[15deg] transition-opacity"
-            style={{ opacity: Math.max(0, -dragX / 100) }}
-          >
-            NOPE
-          </div>
-        </>
-      )}
-
-      {/* Avatar */}
-      <div className="h-44 gradient-primary flex items-center justify-center">
-        <span className="text-7xl">{partner.avatar}</span>
-      </div>
-
-      {/* Info */}
-      <div className="p-4">
-        <div className="flex items-center gap-2">
-          <h3 className="font-display text-xl font-bold">{partner.name}</h3>
-          <span className="text-lg text-muted-foreground">{partner.age}</span>
-        </div>
-        <p className="text-sm text-accent">{partner.personality}</p>
-        <p className="mt-2 text-sm text-foreground line-clamp-2">{partner.bio}</p>
-        <div className="mt-3 flex flex-wrap gap-1">
-          {partner.traits.slice(0, 3).map((trait) => (
-            <span 
-              key={trait}
-              className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium"
+    return (
+      <motion.div
+        ref={ref}
+        className={cn(
+          "absolute inset-0 rounded-2xl bg-card shadow-card overflow-hidden",
+          isTop ? "cursor-grab active:cursor-grabbing" : "pointer-events-none"
+        )}
+        style={{
+          scale: 1 - stackIndex * 0.05,
+          y: stackIndex * 8,
+          zIndex: 10 - stackIndex,
+        }}
+        drag={isTop ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        onDrag={(_, info) => setDragX(info.offset.x)}
+        onDragEnd={(_, info) => {
+          if (info.offset.x > 100) onSwipe('right');
+          else if (info.offset.x < -100) onSwipe('left');
+          setDragX(0);
+        }}
+        animate={{ x: 0, rotate: isTop ? dragX * 0.1 : 0 }}
+        exit={{ x: dragX > 0 ? 300 : -300, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        {/* Like/Nope Indicators */}
+        {isTop && (
+          <>
+            <div 
+              className="absolute left-4 top-4 z-10 rounded-lg border-4 border-green-500 px-4 py-2 font-bold text-green-500 rotate-[-15deg] transition-opacity"
+              style={{ opacity: Math.max(0, dragX / 100) }}
             >
-              {trait}
-            </span>
-          ))}
+              LIKE
+            </div>
+            <div 
+              className="absolute right-4 top-4 z-10 rounded-lg border-4 border-red-500 px-4 py-2 font-bold text-red-500 rotate-[15deg] transition-opacity"
+              style={{ opacity: Math.max(0, -dragX / 100) }}
+            >
+              NOPE
+            </div>
+          </>
+        )}
+
+        {/* Avatar */}
+        <div className="h-44 gradient-primary flex items-center justify-center">
+          <span className="text-7xl">{partner.avatar}</span>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-          <Sparkles className="h-3 w-3" /> {partner.compatibilityHint}
-        </p>
-      </div>
-    </motion.div>
-  );
-};
+
+        {/* Info */}
+        <div className="p-4">
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-xl font-bold">{partner.name}</h3>
+            <span className="text-lg text-muted-foreground">{partner.age}</span>
+          </div>
+          <p className="text-sm text-accent">{partner.personality}</p>
+          <p className="mt-2 text-sm text-foreground line-clamp-2">{partner.bio}</p>
+          <div className="mt-3 flex flex-wrap gap-1">
+            {partner.traits.slice(0, 3).map((trait) => (
+              <span 
+                key={trait}
+                className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium"
+              >
+                {trait}
+              </span>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+            <Sparkles className="h-3 w-3" /> {partner.compatibilityHint}
+          </p>
+        </div>
+      </motion.div>
+    );
+  }
+);
+
+SwipeableCard.displayName = 'SwipeableCard';

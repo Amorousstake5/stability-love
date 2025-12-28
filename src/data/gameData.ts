@@ -1,4 +1,4 @@
-import { Activity, Achievement, DateScenario, PotentialPartner, RandomEvent } from '@/types/game';
+import { Activity, Achievement, DateScenario, PotentialPartner, RandomEvent, RelationshipMilestone } from '@/types/game';
 
 export const activities: Activity[] = [
   {
@@ -481,7 +481,161 @@ export const randomEvents: RandomEvent[] = [
       { text: 'Use it as a wake-up call', risk: 'low', effects: { health: 5, intelligence: 3 }, affectionChange: 1, stabilityMultiplier: 1.05 },
     ],
   },
+  // Relationship-specific events
+  {
+    id: 'meet_parents',
+    title: 'Meeting the Parents',
+    category: 'Relationship',
+    description: "Your partner wants you to meet their parents. This is a big step in your relationship.",
+    type: 'neutral',
+    choices: [
+      { text: 'Go all out - bring expensive gifts', risk: 'high', effects: { wealth: -12, looks: 3 }, affectionChange: 10, stabilityMultiplier: 0.85 },
+      { text: 'Be yourself and stay authentic', risk: 'low', effects: { intelligence: 2 }, affectionChange: 8, stabilityMultiplier: 1.0 },
+      { text: "Say you're not ready yet", risk: 'high', effects: {}, affectionChange: -15, stabilityMultiplier: 0.9 },
+    ],
+  },
+  {
+    id: 'move_in_together',
+    title: 'Moving In Together',
+    category: 'Relationship',
+    description: "Your partner suggests moving in together. It's a huge commitment but could strengthen your bond.",
+    type: 'positive',
+    choices: [
+      { text: 'Yes! Find a nice place together', risk: 'high', effects: { wealth: -20, health: 5 }, affectionChange: 20, stabilityMultiplier: 0.8 },
+      { text: "Let's start with weekends first", risk: 'low', effects: { wealth: -5 }, affectionChange: 5, stabilityMultiplier: 1.0 },
+      { text: "I need more time to think", risk: 'medium', effects: {}, affectionChange: -8, stabilityMultiplier: 0.95 },
+    ],
+  },
+  {
+    id: 'career_conflict',
+    title: 'Career vs Relationship',
+    category: 'Career',
+    description: "A dream job opportunity requires long hours that would cut into your relationship time.",
+    type: 'neutral',
+    choices: [
+      { text: 'Take the job - career comes first', risk: 'high', effects: { wealth: 18, intelligence: 5, health: -8 }, affectionChange: -12, stabilityMultiplier: 0.75 },
+      { text: 'Find a compromise with your partner', risk: 'medium', effects: { wealth: 10, intelligence: 3 }, affectionChange: 2, stabilityMultiplier: 0.9 },
+      { text: 'Decline - relationship is priority', risk: 'low', effects: { health: 3 }, affectionChange: 8, stabilityMultiplier: 1.05 },
+    ],
+  },
+  {
+    id: 'ex_reappears',
+    title: 'Blast from the Past',
+    category: 'Relationship',
+    description: "Your ex suddenly reaches out wanting to reconnect. Your partner found out.",
+    type: 'negative',
+    choices: [
+      { text: 'Block ex immediately, reassure partner', risk: 'low', effects: { intelligence: 2 }, affectionChange: 5, stabilityMultiplier: 1.0 },
+      { text: 'Stay friends with ex, be transparent', risk: 'high', effects: {}, affectionChange: -12, stabilityMultiplier: 0.8 },
+      { text: 'Hide the contact from partner', risk: 'high', effects: {}, affectionChange: -20, stabilityMultiplier: 0.7 },
+    ],
+  },
+  {
+    id: 'trust_test',
+    title: 'Password Dilemma',
+    category: 'Relationship',
+    description: "Your partner asks for your phone password as a sign of trust.",
+    type: 'neutral',
+    choices: [
+      { text: 'Share it openly', risk: 'low', effects: {}, affectionChange: 8, stabilityMultiplier: 1.05 },
+      { text: 'Discuss healthy boundaries instead', risk: 'medium', effects: { intelligence: 4 }, affectionChange: 3, stabilityMultiplier: 1.0 },
+      { text: 'Refuse - privacy matters', risk: 'high', effects: {}, affectionChange: -10, stabilityMultiplier: 0.85 },
+    ],
+  },
+  {
+    id: 'vacation_plans',
+    title: 'Dream Vacation',
+    category: 'Relationship',
+    description: "Your partner wants to plan a romantic getaway together.",
+    type: 'positive',
+    choices: [
+      { text: 'Book a luxury resort', risk: 'high', effects: { wealth: -25, looks: 5, health: 8 }, affectionChange: 15, stabilityMultiplier: 0.8 },
+      { text: 'Plan a budget-friendly adventure', risk: 'low', effects: { wealth: -8, health: 5, strength: 3 }, affectionChange: 10, stabilityMultiplier: 1.0 },
+      { text: 'Suggest a staycation instead', risk: 'low', effects: { wealth: -3 }, affectionChange: 5, stabilityMultiplier: 1.05 },
+    ],
+  },
+  {
+    id: 'family_disapproval',
+    title: 'Family Disapproves',
+    category: 'Relationship',
+    description: "Your family expresses concerns about your partner. They want you to reconsider the relationship.",
+    type: 'negative',
+    choices: [
+      { text: 'Stand by your partner firmly', risk: 'medium', effects: { intelligence: 3 }, affectionChange: 12, stabilityMultiplier: 0.85 },
+      { text: 'Try to bridge the gap between them', risk: 'low', effects: { education: 2, intelligence: 2 }, affectionChange: 5, stabilityMultiplier: 0.95 },
+      { text: 'Take a break to think things over', risk: 'high', effects: {}, affectionChange: -18, stabilityMultiplier: 0.8 },
+    ],
+  },
+  {
+    id: 'different_futures',
+    title: 'Different Life Goals',
+    category: 'Relationship',
+    description: "You and your partner realize you have different visions for the future (kids, career, location).",
+    type: 'negative',
+    choices: [
+      { text: 'Have a deep heart-to-heart talk', risk: 'medium', effects: { intelligence: 5, education: 3 }, affectionChange: 8, stabilityMultiplier: 0.9 },
+      { text: 'Compromise on some goals', risk: 'low', effects: { intelligence: 2 }, affectionChange: 3, stabilityMultiplier: 0.95 },
+      { text: 'Avoid the conversation for now', risk: 'high', effects: {}, affectionChange: -8, stabilityMultiplier: 0.85 },
+    ],
+  },
+  {
+    id: 'anniversary_surprise',
+    title: 'Anniversary Time!',
+    category: 'Relationship',
+    description: "Your anniversary is coming up. Time to make it special!",
+    type: 'positive',
+    choices: [
+      { text: 'Plan an elaborate surprise proposal', risk: 'high', effects: { wealth: -30, looks: 5 }, affectionChange: 25, stabilityMultiplier: 0.75 },
+      { text: 'Recreate your first date', risk: 'low', effects: { wealth: -10, intelligence: 3 }, affectionChange: 15, stabilityMultiplier: 1.0 },
+      { text: 'Write a heartfelt letter', risk: 'low', effects: { education: 2 }, affectionChange: 10, stabilityMultiplier: 1.05 },
+    ],
+  },
+  {
+    id: 'partner_sick',
+    title: 'Partner Falls Ill',
+    category: 'Health',
+    description: "Your partner is sick and needs care. Work is piling up.",
+    type: 'negative',
+    choices: [
+      { text: 'Take time off to nurse them back to health', risk: 'medium', effects: { wealth: -8, health: -3 }, affectionChange: 15, stabilityMultiplier: 0.9 },
+      { text: 'Check in during lunch breaks', risk: 'low', effects: { wealth: -2 }, affectionChange: 5, stabilityMultiplier: 1.0 },
+      { text: 'Focus on work - they can handle it', risk: 'high', effects: { wealth: 5 }, affectionChange: -12, stabilityMultiplier: 0.85 },
+    ],
+  },
 ];
+
+// Personalized dialogue responses based on partner personality
+export const personalityDialogues: Record<string, {
+  greeting: string[];
+  impressed: string[];
+  disappointed: string[];
+  loving: string[];
+}> = {
+  ambitious: {
+    greeting: ["So, what are your goals in life?", "Tell me about your biggest achievement.", "Where do you see yourself in 5 years?"],
+    impressed: ["I love your drive!", "Now that's what I call ambition.", "You really know how to get things done."],
+    disappointed: ["I expected more from you.", "That's... not very ambitious.", "Are you sure about that choice?"],
+    loving: ["Together we could build an empire.", "I admire your hustle.", "Success looks good on you."],
+  },
+  athletic: {
+    greeting: ["Do you work out?", "What's your favorite way to stay active?", "Ready for an adventure?"],
+    impressed: ["I love your energy!", "You're in great shape!", "Finally someone who can keep up with me!"],
+    disappointed: ["You should hit the gym more.", "That's not very healthy...", "I thought you were more active."],
+    loving: ["You make my heart race!", "Let's conquer the world together.", "You're my perfect workout partner."],
+  },
+  intellectual: {
+    greeting: ["What book are you reading right now?", "What's something fascinating you learned recently?", "Tell me about your thoughts on..."],
+    impressed: ["What an insightful perspective!", "I love how your mind works.", "Finally, someone who gets it!"],
+    disappointed: ["That's a rather simplistic view.", "Have you considered other angles?", "I expected deeper thinking."],
+    loving: ["Our conversations are my favorite.", "You stimulate my mind like no one else.", "I cherish our intellectual connection."],
+  },
+  balanced: {
+    greeting: ["How's life treating you?", "What brings you joy these days?", "Tell me something random about yourself."],
+    impressed: ["You're so well-rounded!", "I appreciate your balanced approach.", "You handle everything so gracefully."],
+    disappointed: ["That seemed a bit extreme.", "Maybe find some middle ground?", "Balance is important, you know."],
+    loving: ["You complete me perfectly.", "We're so in sync.", "You bring harmony to my life."],
+  },
+};
 
 export const dateScenarios: DateScenario[] = [
   {
@@ -561,6 +715,44 @@ export const dateScenarios: DateScenario[] = [
     ],
   },
   {
+    id: 'beach',
+    name: 'Beach Day',
+    icon: '🏖️',
+    description: 'Relaxing day by the ocean',
+    requiredAffection: 50,
+    dialogue: [
+      { speaker: 'partner', text: "The ocean is so peaceful. What do you want to do first?" },
+      { 
+        speaker: 'player', 
+        options: [
+          { text: "Let's go for a swim! Race you to the water!", stats: ['strength', 'health'], affectionBonus: 4 },
+          { text: "I brought books. Let's read together.", stats: ['intelligence', 'education'], affectionBonus: 3 },
+          { text: "Just want to lay here with you.", stats: ['looks'], affectionBonus: 5 },
+        ]
+      },
+      { speaker: 'partner', text: "This is perfect. I could stay here forever with you." },
+    ],
+  },
+  {
+    id: 'cooking',
+    name: 'Cook Together',
+    icon: '👨‍🍳',
+    description: 'Prepare a meal as a team',
+    requiredAffection: 60,
+    dialogue: [
+      { speaker: 'partner', text: "What should we make together tonight?" },
+      { 
+        speaker: 'player', 
+        options: [
+          { text: "Something fancy! I'll handle the expensive ingredients.", stats: ['wealth'], affectionBonus: 3 },
+          { text: "A healthy meal - I know the perfect recipe!", stats: ['health', 'intelligence'], affectionBonus: 4 },
+          { text: "Your favorite dish. Teach me how you like it.", stats: ['education'], affectionBonus: 5 },
+        ]
+      },
+      { speaker: 'partner', text: "I love cooking with you. We make a great team!" },
+    ],
+  },
+  {
     id: 'commitment',
     name: 'The Big Question',
     icon: '💍',
@@ -578,6 +770,73 @@ export const dateScenarios: DateScenario[] = [
       },
       { speaker: 'partner', text: "This means everything to me..." },
     ],
+  },
+];
+
+export const relationshipMilestones: RelationshipMilestone[] = [
+  {
+    id: 'first_spark',
+    title: 'First Spark',
+    description: 'You felt that initial connection!',
+    icon: '✨',
+    requiredAffection: 10,
+    rewards: { stabilityBonus: 5 },
+  },
+  {
+    id: 'getting_closer',
+    title: 'Getting Closer',
+    description: 'Things are heating up between you two.',
+    icon: '💫',
+    requiredAffection: 25,
+    rewards: { statBonus: { looks: 3 }, stabilityBonus: 5 },
+  },
+  {
+    id: 'first_kiss',
+    title: 'First Kiss',
+    description: 'A magical moment you will never forget.',
+    icon: '💋',
+    requiredAffection: 35,
+    rewards: { statBonus: { health: 5 }, stabilityBonus: 8 },
+  },
+  {
+    id: 'exclusive',
+    title: 'Going Exclusive',
+    description: "It's official - you're only seeing each other.",
+    icon: '💕',
+    requiredAffection: 45,
+    rewards: { statBonus: { intelligence: 3 }, stabilityBonus: 10 },
+  },
+  {
+    id: 'meeting_friends',
+    title: 'Meeting the Friends',
+    description: 'Your social circles are merging.',
+    icon: '👥',
+    requiredAffection: 55,
+    rewards: { statBonus: { education: 3 }, stabilityBonus: 8 },
+  },
+  {
+    id: 'saying_love',
+    title: 'Saying "I Love You"',
+    description: 'Three words that changed everything.',
+    icon: '❤️',
+    requiredAffection: 65,
+    rewards: { statBonus: { health: 5, looks: 3 }, stabilityBonus: 12 },
+  },
+  {
+    id: 'moving_in',
+    title: 'Moving In Together',
+    description: 'Sharing a home and a life.',
+    icon: '🏠',
+    requiredAffection: 75,
+    rewards: { statBonus: { wealth: 10 }, stabilityBonus: 15 },
+  },
+  {
+    id: 'soulmates',
+    title: 'Soulmates',
+    description: 'You found your person. True love achieved!',
+    icon: '💞',
+    requiredAffection: 90,
+    rewards: { statBonus: { health: 10, intelligence: 5, wealth: 10 }, stabilityBonus: 20 },
   },
 ];
 

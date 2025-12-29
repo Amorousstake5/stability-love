@@ -1,9 +1,11 @@
-import { AIPartner } from '@/types/game';
+import { AIPartner, PlayerStats } from '@/types/game';
 import { Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CompatibilityScore } from './CompatibilityScore';
 
 interface PartnerCardProps {
   partner: AIPartner;
+  playerStats?: PlayerStats;
 }
 
 const statusLabels: Record<AIPartner['relationshipStatus'], { label: string; color: string }> = {
@@ -13,7 +15,7 @@ const statusLabels: Record<AIPartner['relationshipStatus'], { label: string; col
   committed: { label: 'In a Relationship', color: 'text-stat-wealth bg-stat-wealth/20' },
 };
 
-export const PartnerCard = ({ partner }: PartnerCardProps) => {
+export const PartnerCard = ({ partner, playerStats }: PartnerCardProps) => {
   const status = statusLabels[partner.relationshipStatus];
   
   return (
@@ -62,10 +64,19 @@ export const PartnerCard = ({ partner }: PartnerCardProps) => {
           'rounded-lg p-2',
           partner.affection >= 80 ? 'bg-secondary' : 'bg-muted opacity-50'
         )}>
-          <div className="font-bold text-stat-looks">80%</div>
+        <div className="font-bold text-stat-looks">80%</div>
           <div className="text-muted-foreground">Commit</div>
         </div>
       </div>
+      
+      {playerStats && (
+        <div className="mt-4">
+          <CompatibilityScore 
+            playerStats={playerStats} 
+            partnerPreferences={partner.preferences} 
+          />
+        </div>
+      )}
     </div>
   );
 };

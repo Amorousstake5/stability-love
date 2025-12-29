@@ -48,7 +48,7 @@ const Index = () => {
           {/* Player Profile Sidebar */}
           <aside className="lg:col-span-4 space-y-6">
             <PlayerProfile player={player} />
-            <PartnerCard partner={partner} />
+            <PartnerCard partner={partner} playerStats={player.stats} />
           </aside>
           
           {/* Main Content */}

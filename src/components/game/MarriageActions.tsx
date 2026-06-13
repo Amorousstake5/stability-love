@@ -1,6 +1,6 @@
 import { AIPartner } from '@/types/game';
 import { Button } from '@/components/ui/button';
-import { Heart, Ring, Users2, HeartCrack } from 'lucide-react';
+import { Heart, Users2, HeartCrack } from 'lucide-react';
 
 interface Props {
   partner: AIPartner;

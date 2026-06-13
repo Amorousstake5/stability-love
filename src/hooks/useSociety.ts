@@ -55,8 +55,8 @@ export const useSociety = () => {
     return {
       id: `${chosen.tpl.id}-${Date.now()}`,
       npc: chosen.npc,
-      title: chosen.tpl.title.replaceAll('{npc}', chosen.npc.name),
-      description: chosen.tpl.description.replaceAll('{npc}', chosen.npc.name),
+      title: chosen.tpl.title.split('{npc}').join(chosen.npc.name),
+      description: chosen.tpl.description.split('{npc}').join(chosen.npc.name),
       choices: chosen.tpl.choices,
     };
   }, [society.circle]);

@@ -24,12 +24,16 @@ const getRelationshipStatus = (affection: number): AIPartner['relationshipStatus
   return 'stranger';
 };
 
+export type MarriageStage = 'single' | 'dating' | 'engaged' | 'married';
+
 export const useGameState = () => {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [player, setPlayer] = useState<Player | null>(null);
   const [partner, setPartner] = useState<AIPartner | null>(null);
   const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
   const [activeDate, setActiveDate] = useState<DateScenario | null>(null);
+  const [marriageStage, setMarriageStage] = useState<MarriageStage>('single');
+  const [breakupCount, setBreakupCount] = useState(0);
 
   const initializeGame = useCallback((settings: GameSettings) => {
     const personality = partnerPersonalities.find(p => p.id === settings.partnerPersonality) || partnerPersonalities[0];
@@ -214,8 +218,61 @@ export const useGameState = () => {
     });
   }, [player, partner, checkAchievements]);
 
-  const cancelDate = useCallback(() => {
-    setActiveDate(null);
+  const cancelDate = useCallback(() => setActiveDate(null), []);
+
+  const propose = useCallback(() => {
+    if (!partner || partner.affection < 70) {
+      toast.error('Not ready yet', { description: 'Build more affection first.' });
+      return;
+    }
+    setMarriageStage('engaged');
+    toast.success('You proposed! 💍', { description: `${partner.name} said yes!` });
+  }, [partner]);
+
+  const marry = useCallback(() => {
+    if (!partner) return;
+    setMarriageStage('married');
+    toast.success('You are married! 🎊', { description: `Now the real game begins…` });
+  }, [partner]);
+
+  const applyExternalEffects = useCallback((d: { stats?: Partial<PlayerStats>; stability?: number; affection?: number }) => {
+    setPlayer(prev => {
+      if (!prev) return prev;
+      const newStats = { ...prev.stats };
+      Object.entries(d.stats || {}).forEach(([k, v]) => {
+        const key = k as keyof PlayerStats;
+        newStats[key] = Math.max(0, Math.min(100, newStats[key] + (v || 0)));
+      });
+      const baseStability = calculateStabilityIndex(newStats);
+      const newStability = Math.max(0, Math.min(100, baseStability + (d.stability || 0)));
+      return { ...prev, stats: newStats, stabilityIndex: newStability };
+    });
+    if (d.affection != null) {
+      setPartner(prev => prev ? { ...prev, affection: Math.max(0, Math.min(100, prev.affection + (d.affection || 0))) } : prev);
+    }
+  }, []);
+
+  const partWays = useCallback(() => {
+    if (!partner) return;
+    setBreakupCount(c => c + 1);
+    setMarriageStage('single');
+    const wasMarried = marriageStage === 'married';
+    toast.error(wasMarried ? 'Divorced.' : 'You parted ways.', { description: 'Heartbreak hits hard. Time to rebuild.' });
+    // heartbreak penalty
+    setPlayer(prev => {
+      if (!prev) return prev;
+      const newStats = { ...prev.stats };
+      newStats.health = Math.max(0, newStats.health - 8);
+      newStats.wealth = Math.max(0, newStats.wealth - (wasMarried ? 20 : 5));
+      const newStability = Math.max(0, calculateStabilityIndex(newStats) - 10);
+      return { ...prev, stats: newStats, stabilityIndex: newStability };
+    });
+    setPartner(null);
+  }, [partner, marriageStage]);
+
+  const setNewPartner = useCallback((newPartner: AIPartner) => {
+    setPartner(newPartner);
+    setMarriageStage('dating');
   }, []);
 
   return {
@@ -224,10 +281,17 @@ export const useGameState = () => {
     partner,
     newAchievement,
     activeDate,
+    marriageStage,
+    breakupCount,
     initializeGame,
     performActivity,
     startDate,
     completeDate,
     cancelDate,
+    propose,
+    marry,
+    partWays,
+    setNewPartner,
+    applyExternalEffects,
   };
 };

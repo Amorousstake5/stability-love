@@ -218,6 +218,8 @@ export const useGameState = () => {
     });
   }, [player, partner, checkAchievements]);
 
+  const cancelDate = useCallback(() => setActiveDate(null), []);
+
   const propose = useCallback(() => {
     if (!partner || partner.affection < 70) {
       toast.error('Not ready yet', { description: 'Build more affection first.' });

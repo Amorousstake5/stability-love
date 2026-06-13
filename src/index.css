@@ -142,6 +142,19 @@
   .gradient-romantic {
     background: var(--gradient-romantic);
   }
+
+  .gradient-matte-blue {
+    background:
+      radial-gradient(1200px 600px at 10% 0%, hsl(215 55% 28% / 0.7), transparent 60%),
+      radial-gradient(900px 500px at 100% 100%, hsl(220 60% 18% / 0.9), transparent 60%),
+      linear-gradient(160deg, hsl(218 45% 14%) 0%, hsl(222 50% 10%) 55%, hsl(225 55% 8%) 100%);
+  }
+  .gradient-matte-blue-light {
+    background:
+      radial-gradient(1200px 600px at 10% 0%, hsl(210 60% 78% / 0.55), transparent 60%),
+      radial-gradient(900px 500px at 100% 100%, hsl(215 55% 68% / 0.55), transparent 60%),
+      linear-gradient(160deg, hsl(212 45% 92%) 0%, hsl(215 50% 86%) 55%, hsl(220 55% 80%) 100%);
+  }
   
   .shadow-soft {
     box-shadow: var(--shadow-soft);

@@ -24,12 +24,16 @@ const getRelationshipStatus = (affection: number): AIPartner['relationshipStatus
   return 'stranger';
 };
 
+export type MarriageStage = 'single' | 'dating' | 'engaged' | 'married';
+
 export const useGameState = () => {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [player, setPlayer] = useState<Player | null>(null);
   const [partner, setPartner] = useState<AIPartner | null>(null);
   const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
   const [activeDate, setActiveDate] = useState<DateScenario | null>(null);
+  const [marriageStage, setMarriageStage] = useState<MarriageStage>('single');
+  const [breakupCount, setBreakupCount] = useState(0);
 
   const initializeGame = useCallback((settings: GameSettings) => {
     const personality = partnerPersonalities.find(p => p.id === settings.partnerPersonality) || partnerPersonalities[0];

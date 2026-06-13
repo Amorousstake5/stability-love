@@ -1,5 +1,4 @@
 import { RPGCharacter } from '@/types/rpg';
-import { Progress } from '@/components/ui/progress';
 import { Heart, Brain, Sparkles, Smile, Wallet, Award, User } from 'lucide-react';
 
 const Row = ({ icon: Icon, label, value, color }: { icon: any; label: string; value: number; color: string }) => (
@@ -8,7 +7,9 @@ const Row = ({ icon: Icon, label, value, color }: { icon: any; label: string; va
       <span className="flex items-center gap-1.5 text-foreground/80"><Icon className="h-3.5 w-3.5" /> {label}</span>
       <span className="font-mono text-foreground/60">{value}</span>
     </div>
-    <Progress value={value} className={`h-1.5 [&>div]:${color}`} />
+    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+      <div className={`h-full ${color} transition-all`} style={{ width: `${value}%` }} />
+    </div>
   </div>
 );
 
